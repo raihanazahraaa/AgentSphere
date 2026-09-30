@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+
+# Contains a generated DB credential
+sql/00_create_user.sql
+
+# Generated artifacts, reproducible from a fixed seed:
+#   generate_documents.py -> corpus/
+#   build_graph.py        -> graph/
+corpus/
+graph/

@@ -1,0 +1,310 @@
+@prefix agso: <https://agentsphere.local/ontology#> .
+@prefix agsd: <https://agentsphere.local/data/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct:  <http://purl.org/dc/terms/> .
+
+#################################################################
+#    Ontology
+#################################################################
+
+<https://agentsphere.local/ontology>
+    a owl:Ontology ;
+    dct:title "AgentSphere school ontology" ;
+    dct:description """Domain ontology for a school's records, following Figure 3.5 of the
+interim report. One addition to the figure: the Teacher class and the `teaches` relation
+(Teacher -> Class). Figure 3.5 has no Teacher node, but teacher access control needs one —
+a teacher's permitted scope is 'students in the classes I teach', which cannot be expressed
+without an edge from a teacher to a class. Every SPARQL template for the teacher role
+traverses agso:teaches, so removing it would leave that role with no enforceable scope.""" ;
+    owl:versionInfo "1.0.0 (Phase 3a)" .
+
+#################################################################
+#    Classes
+#################################################################
+
+agso:Person
+    a owl:Class ;
+    rdfs:label "Person" ;
+    rdfs:comment "Anything with a name that participates in school life." .
+
+agso:Student
+    a owl:Class ;
+    rdfs:subClassOf agso:Person ;
+    rdfs:label "Student" ;
+    rdfs:comment """A pupil on roll. The unit that access control ultimately resolves to:
+every role's scope is expressed as a set of students.""" .
+
+agso:Parent
+    a owl:Class ;
+    rdfs:subClassOf agso:Person ;
+    rdfs:label "Parent" ;
+    rdfs:comment "A guardian. Linked to their children by agso:guardianOf." .
+
+agso:Teacher
+    a owl:Class ;
+    rdfs:subClassOf agso:Person ;
+    rdfs:label "Teacher" ;
+    rdfs:comment """Teaching staff. Added beyond Figure 3.5 so that teacher scope
+(students in classes I teach) is expressible in the graph.""" .
+
+agso:Class
+    a owl:Class ;
+    rdfs:label "Class" ;
+    rdfs:comment "A form group, e.g. Form 3A. Students are enrolled in exactly one." .
+
+agso:Subject
+    a owl:Class ;
+    rdfs:label "Subject" ;
+    rdfs:comment "A taught subject, e.g. Mathematics." .
+
+agso:Fee
+    a owl:Class ;
+    rdfs:label "Fee" ;
+    rdfs:comment "One invoice raised against one student for one term." .
+
+agso:Result
+    a owl:Class ;
+    rdfs:label "Result" ;
+    rdfs:comment "One mark for one student in one subject for one assessment." .
+
+agso:AttendanceRecord
+    a owl:Class ;
+    rdfs:label "Attendance record" ;
+    rdfs:comment "One student's attendance mark for one school day." .
+
+agso:Homework
+    a owl:Class ;
+    rdfs:label "Homework" ;
+    rdfs:comment "A task set for a whole class, with a due date." .
+
+agso:ScheduleEntry
+    a owl:Class ;
+    rdfs:label "Timetable entry" ;
+    rdfs:comment "One period in a class's weekly timetable." .
+
+agso:Announcement
+    a owl:Class ;
+    rdfs:label "Announcement" ;
+    rdfs:comment "A school-wide or class-wide notice." .
+
+#################################################################
+#    Object properties
+#################################################################
+
+agso:enrolledIn
+    a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:domain agso:Student ;
+    rdfs:range agso:Class ;
+    rdfs:label "enrolled in" ;
+    rdfs:comment "Functional: a student belongs to exactly one form group." .
+
+agso:guardianOf
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Parent ;
+    rdfs:range agso:Student ;
+    rdfs:label "guardian of" ;
+    rdfs:comment """The parent access-control edge. A parent's scope is exactly the set of
+students reachable by this property from their own node.""" .
+
+agso:teaches
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Teacher ;
+    rdfs:range agso:Class ;
+    rdfs:label "teaches" ;
+    rdfs:comment """The teacher access-control edge, added beyond Figure 3.5. A teacher's
+scope is the students enrolled in the classes reached by this property.""" .
+
+agso:hasFee
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Student ;
+    rdfs:range agso:Fee ;
+    rdfs:label "has fee" .
+
+agso:hasResult
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Student ;
+    rdfs:range agso:Result ;
+    rdfs:label "has result" .
+
+agso:hasAttendance
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Student ;
+    rdfs:range agso:AttendanceRecord ;
+    rdfs:label "has attendance record" .
+
+agso:forSubject
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Result ;
+    rdfs:range agso:Subject ;
+    rdfs:label "for subject" .
+
+agso:assignedToClass
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Homework ;
+    rdfs:range agso:Class ;
+    rdfs:label "assigned to class" .
+
+agso:setBy
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Homework ;
+    rdfs:range agso:Teacher ;
+    rdfs:label "set by" .
+
+agso:homeworkSubject
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Homework ;
+    rdfs:range agso:Subject ;
+    rdfs:label "homework subject" .
+
+agso:scheduleForClass
+    a owl:ObjectProperty ;
+    rdfs:domain agso:ScheduleEntry ;
+    rdfs:range agso:Class ;
+    rdfs:label "timetable entry for class" .
+
+agso:scheduleSubject
+    a owl:ObjectProperty ;
+    rdfs:domain agso:ScheduleEntry ;
+    rdfs:range agso:Subject ;
+    rdfs:label "timetable entry subject" .
+
+agso:taughtBy
+    a owl:ObjectProperty ;
+    rdfs:domain agso:ScheduleEntry ;
+    rdfs:range agso:Teacher ;
+    rdfs:label "taught by" .
+
+agso:classTeacher
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Class ;
+    rdfs:range agso:Teacher ;
+    rdfs:label "class teacher" ;
+    rdfs:comment """The form tutor. Distinct from agso:teaches, which covers every class a
+teacher takes, not only the one they are tutor for.""" .
+
+agso:announcementForClass
+    a owl:ObjectProperty ;
+    rdfs:domain agso:Announcement ;
+    rdfs:range agso:Class ;
+    rdfs:label "announcement for class" ;
+    rdfs:comment "Absent on school-wide announcements." .
+
+#################################################################
+#    Datatype properties — people and classes
+#################################################################
+
+agso:fullName    a owl:DatatypeProperty ; rdfs:domain agso:Person ; rdfs:range xsd:string ;
+                 rdfs:label "full name" .
+agso:studentNo   a owl:DatatypeProperty ; rdfs:domain agso:Student ; rdfs:range xsd:string ;
+                 rdfs:label "student number" .
+agso:dateOfBirth a owl:DatatypeProperty ; rdfs:domain agso:Student ; rdfs:range xsd:date ;
+                 rdfs:label "date of birth" .
+agso:enrolledOn  a owl:DatatypeProperty ; rdfs:domain agso:Student ; rdfs:range xsd:date ;
+                 rdfs:label "enrolled on" .
+agso:email       a owl:DatatypeProperty ; rdfs:domain agso:Person ; rdfs:range xsd:string ;
+                 rdfs:label "email" .
+
+agso:className    a owl:DatatypeProperty ; rdfs:domain agso:Class ; rdfs:range xsd:string ;
+                  rdfs:label "class name" .
+agso:formLevel    a owl:DatatypeProperty ; rdfs:domain agso:Class ; rdfs:range xsd:string ;
+                  rdfs:label "form level" ; rdfs:comment "Form 1 to Form 5." .
+agso:academicYear a owl:DatatypeProperty ; rdfs:domain agso:Class ; rdfs:range xsd:string ;
+                  rdfs:label "academic year" .
+agso:room         a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "room" .
+
+agso:subjectName a owl:DatatypeProperty ; rdfs:domain agso:Subject ; rdfs:range xsd:string ;
+                 rdfs:label "subject name" .
+
+#################################################################
+#    Datatype properties — records
+#################################################################
+
+agso:feeDescription a owl:DatatypeProperty ; rdfs:domain agso:Fee ; rdfs:range xsd:string ;
+                    rdfs:label "fee description" .
+agso:amount         a owl:DatatypeProperty ; rdfs:domain agso:Fee ; rdfs:range xsd:decimal ;
+                    rdfs:label "amount invoiced" .
+agso:amountPaid     a owl:DatatypeProperty ; rdfs:domain agso:Fee ; rdfs:range xsd:decimal ;
+                    rdfs:label "amount paid" .
+agso:dueDate        a owl:DatatypeProperty ; rdfs:range xsd:date ; rdfs:label "due date" .
+agso:paidDate       a owl:DatatypeProperty ; rdfs:domain agso:Fee ; rdfs:range xsd:date ;
+                    rdfs:label "paid date" .
+agso:feeStatus      a owl:DatatypeProperty ; rdfs:domain agso:Fee ; rdfs:range xsd:string ;
+                    rdfs:label "fee status" ;
+                    rdfs:comment "unpaid | partial | paid | waived." .
+agso:term           a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "term" .
+
+agso:score      a owl:DatatypeProperty ; rdfs:domain agso:Result ; rdfs:range xsd:decimal ;
+                rdfs:label "score" .
+agso:maxScore   a owl:DatatypeProperty ; rdfs:domain agso:Result ; rdfs:range xsd:decimal ;
+                rdfs:label "maximum score" .
+agso:grade      a owl:DatatypeProperty ; rdfs:domain agso:Result ; rdfs:range xsd:string ;
+                rdfs:label "grade" .
+agso:assessment a owl:DatatypeProperty ; rdfs:domain agso:Result ; rdfs:range xsd:string ;
+                rdfs:label "assessment" ;
+                rdfs:comment "Mid-term or End-of-term." .
+
+agso:attendanceDate   a owl:DatatypeProperty ; rdfs:domain agso:AttendanceRecord ;
+                      rdfs:range xsd:date ; rdfs:label "attendance date" .
+agso:attendanceStatus a owl:DatatypeProperty ; rdfs:domain agso:AttendanceRecord ;
+                      rdfs:range xsd:string ; rdfs:label "attendance status" ;
+                      rdfs:comment "present | absent | late | excused." .
+agso:remarks          a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "remarks" .
+
+agso:title        a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "title" .
+agso:description  a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "description" .
+agso:assignedDate a owl:DatatypeProperty ; rdfs:domain agso:Homework ; rdfs:range xsd:date ;
+                  rdfs:label "assigned date" .
+
+agso:dayOfWeek a owl:DatatypeProperty ; rdfs:domain agso:ScheduleEntry ; rdfs:range xsd:integer ;
+               rdfs:label "day of week" ; rdfs:comment "1 = Monday .. 7 = Sunday (ISO-8601)." .
+agso:startTime a owl:DatatypeProperty ; rdfs:domain agso:ScheduleEntry ; rdfs:range xsd:time ;
+               rdfs:label "start time" .
+agso:endTime   a owl:DatatypeProperty ; rdfs:domain agso:ScheduleEntry ; rdfs:range xsd:time ;
+               rdfs:label "end time" .
+
+agso:publishedOn a owl:DatatypeProperty ; rdfs:domain agso:Announcement ; rdfs:range xsd:date ;
+                 rdfs:label "published on" .
+agso:audience    a owl:DatatypeProperty ; rdfs:domain agso:Announcement ; rdfs:range xsd:string ;
+                 rdfs:label "audience" ;
+                 rdfs:comment "all | parents | teachers | students." .
+
+#################################################################
+#    Access-control note
+#################################################################
+
+# The three role scopes are graph traversals, and the SPARQL templates in
+# app/graph/templates.py encode exactly these:
+#
+#   parent        ?parent agso:guardianOf ?student
+#   teacher       ?teacher agso:teaches ?class . ?student agso:enrolledIn ?class
+#   administrator (no constraint)
+#
+# The constraint is injected server-side from the session role token in
+# app/graph/rbac.py. It is never expressed in the prompt, so no instruction the model
+# receives — and no instruction a user smuggles into a question — can widen it.
+
+#################################################################
+#    Attendance summary properties
+#################################################################
+#
+# The graph stores a per-student attendance summary plus only the non-present days.
+# MySQL remains the complete system of record for all 30,000 daily marks; this is a
+# query projection. Copying every "present" mark would add ~150,000 triples that answer
+# no question the assistant is ever asked.
+
+agso:schoolDaysRecorded a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:integer ; rdfs:label "school days recorded" .
+agso:daysPresent a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:integer ; rdfs:label "days present" .
+agso:daysAbsent a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:integer ; rdfs:label "days absent" .
+agso:daysLate a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:integer ; rdfs:label "days late" .
+agso:daysExcused a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:integer ; rdfs:label "days excused" .
+agso:attendanceRate a owl:DatatypeProperty ; rdfs:domain agso:Student ;
+    rdfs:range xsd:decimal ; rdfs:label "attendance rate" ;
+    rdfs:comment "Present or late, as a fraction of school days recorded." .

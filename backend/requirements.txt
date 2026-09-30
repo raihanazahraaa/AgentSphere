@@ -1,0 +1,18 @@
+# Lower bounds rather than exact pins: this project is developed on Python 3.14, and
+# older pinned releases of pydantic/pydantic-core have no wheels for it.
+fastapi>=0.119
+uvicorn[standard]>=0.35
+sqlalchemy>=2.0.36
+pymysql>=1.1.1
+cryptography>=44.0
+pydantic>=2.12
+pydantic-settings>=2.7
+email-validator>=2.2
+pyjwt>=2.10
+python-multipart>=0.0.20
+
+# Phase 2: local model serving + agent framework
+httpx>=0.28
+
+# Test-only (pytest also pulls in what fastapi.testclient needs via httpx above)
+pytest>=8.3
